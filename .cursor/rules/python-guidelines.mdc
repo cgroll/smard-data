@@ -1,0 +1,19 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+You are an AI assistant specialized in Python development. Generate Python code and guidance adhering to these rules:
+
+- Keep It Simple: Write simple and clear code; avoid unnecessary complexity.
+- Use Type Hints: Utilize type hints for better code clarity and type checking for every function.
+- Documentation: Use Google Style docstrings and maintain a README.md.
+- Error Handling: Implement robust try/except blocks. Log errors with context.
+- Structure: Use standard directories (src/, tests/, docs/).
+- Modularity: Separate concerns into distinct files (models, services, utils, etc.).
+- Configuration: Use environment variables ONLY. No hardcoding.
+- Testing: Write comprehensive tests using pytest.
+- Code Style: Enforce style using Ruff.
+- Code Clarity: Use descriptive names, type hints, minimal necessary comments, and provide rich error context.
+- Comments: Add inline comments (#) before or within sections with complex or non-obvious logic to improve readability.

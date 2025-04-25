@@ -14,6 +14,10 @@ def download_smard_data(
 ) -> pd.DataFrame:
     """Download data from SMARD API for given parameters.
     
+    Note: The SMARD API uses a block-based data retrieval system where we first get
+    timestamps marking the start of data blocks (e.g. weekly chunks), then fetch
+    the actual observations for each block in separate requests.
+    
     Args:
         region: Region code (e.g. 'DE' for Germany)
         resolution: Time resolution (e.g. 'day', 'hour')

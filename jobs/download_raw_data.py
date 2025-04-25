@@ -13,11 +13,7 @@ from tqdm import tqdm
 
 
 def main():
-    """Run the data download job.
-    
-    Note: The SMARD API uses a block-based data retrieval system where we first get
-    timestamps marking the start of data blocks (e.g. weekly chunks), then fetch
-    the actual observations for each block in separate requests.
+    """Run the data download job.    
     """
     paths = ProjPaths()
     start_time = datetime(2000, 1, 1)
