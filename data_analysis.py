@@ -1,9 +1,8 @@
 # %%
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from pathlib import Path
-from smard_data.config import Variable, Resolution
+import numpy as np
+from smard_data.config import Variable
 from smard_data.paths import ProjPaths
 
 # Set consistent style for all plots
@@ -127,16 +126,17 @@ def plot_demand_overview():
     """Create overview plots of power demand."""
     # Yearly total load trend
     fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
-    monthly_load = df_load['TOTAL_LOAD'].resample('M').mean()
+    monthly_load = df_load['TOTAL_LOAD'].resample('ME').sum() / 1000  # Convert to GWh
+    monthly_load = monthly_load.iloc[:-1]
     monthly_load.plot(ax=ax)
     
-    annotation = (f"Average monthly load ranges from {monthly_load.min():,.0f} MW to {monthly_load.max():,.0f} MW\n"
+    annotation = (f"Aggregated monthly load ranges from {monthly_load.min():,.0f} GWh to {monthly_load.max():,.0f} GWh\n"
                  f"Overall trend shows {'increasing' if monthly_load.iloc[-1] > monthly_load.iloc[0] else 'decreasing'} demand")
     
     style_plot(fig, ax, 
-              'Monthly Average Power Demand in Germany',
+              'Monthly Power Demand in Germany',
               'Year', 
-              'Average Load (MW)',
+              'Total Load (GWh)',
               annotation)
     plt.show()
     
@@ -154,9 +154,9 @@ def plot_demand_overview():
                  "Lower average demand during summer months")
     
     style_plot(fig, ax,
-              'Average Monthly Power Demand Pattern',
+              'Average Monthly Power Demand Pattern (hourly)',
               'Month',
-              'Average Load (MW)',
+              'Average Load (MWh)',
               annotation)
     plt.show()
     
@@ -173,9 +173,9 @@ def plot_demand_overview():
                  "Lowest demand in the middle of the night when most people are sleeping")
     
     style_plot(fig, ax,
-              'Average Daily Power Demand Pattern',
+              'Average Daily Power Demand Pattern (hourly)',
               'Hour of Day',
-              'Average Load (MW)',
+              'Average Load (MWh)',
               annotation)
     plt.show()
 
@@ -190,8 +190,8 @@ df_combined = load_generation_data()
 
 def plot_generation_mix_evolution():
     """Plot the evolution of the generation mix over time."""
-    # Calculate monthly averages
-    monthly_gen = df_combined.resample('M').mean()
+    # Calculate monthly averages (scaling 15-min values to hourly MWh)
+    monthly_gen = df_combined.resample('ME').mean()
     
     # Absolute generation
     fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
@@ -200,12 +200,13 @@ def plot_generation_mix_evolution():
     annotation = ("Key observations:\n"
                  "- Increasing renewable contribution\n"
                  "- Seasonal patterns in solar and wind\n"
-                 "- Declining nuclear generation")
+                 "- Declining nuclear generation\n"
+                 "Note: Values shown are hourly averages calculated from 15-minute intervals")
     
     style_plot(fig, ax,
               'Evolution of Power Generation Mix',
               'Year',
-              'Power Generation (MW)',
+              'Power Generation (MWh)',
               annotation)
     
     plt.legend(bbox_to_anchor=(0.5, -0.15), loc='upper center', ncol=4)
@@ -254,7 +255,7 @@ def plot_renewable_patterns():
     style_plot(fig, axes[0],
               'Average Solar Generation by Month',
               'Month',
-              'Power (MW)',
+              'Power (MWh)',
               annotation_solar)
     
     # Hourly solar pattern
@@ -270,7 +271,7 @@ def plot_renewable_patterns():
     style_plot(fig, axes[1],
               'Average Solar Generation by Hour',
               'Hour of Day',
-              'Power (MW)',
+              'Power (MWh)',
               annotation_hourly)
     
     plt.tight_layout()
@@ -294,7 +295,7 @@ def plot_renewable_patterns():
     style_plot(fig, axes[0],
               'Average Wind Generation by Month',
               'Month',
-              'Power (MW)',
+              'Power (MWh)',
               annotation_wind)
     
     # Hourly wind pattern
@@ -309,7 +310,7 @@ def plot_renewable_patterns():
     style_plot(fig, axes[1],
               'Average Wind Generation by Hour',
               'Hour of Day',
-              'Power (MW)',
+              'Power (MWh)',
               annotation_hourly)
     
     plt.tight_layout()
@@ -326,38 +327,92 @@ def plot_grid_stability():
     # Calculate residual load percentage
     residual_pct = (df_load['RESIDUAL_LOAD'] / df_load['TOTAL_LOAD'] * 100).clip(lower=0)
     
-    # Monthly maximum residual load
+    # Monthly maximum and mean residual load
     fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
-    monthly_max_residual = residual_pct.resample('M').max()
+    monthly_max_residual = residual_pct.resample('ME').max()
+    monthly_mean_residual = residual_pct.resample('ME').mean()
     
-    ax.plot(monthly_max_residual.index, monthly_max_residual.values)
+    ax.plot(monthly_max_residual.index, monthly_max_residual.values, label='Maximum')
+    ax.plot(monthly_mean_residual.index, monthly_mean_residual.values, label='Mean')
+    ax.legend()
+    ax.set_ylim(bottom=0)  # Set y-axis to start at 0
     
-    annotation = (f"Average maximum residual load: {monthly_max_residual.mean():.1f}%\n"
-                 f"Highest recorded: {monthly_max_residual.max():.1f}%\n"
-                 "Trend shows decreasing reliance on conventional sources")
-    
+    annotation = ("Despite decreasing average reliance on conventional sources,\n"
+                 "each month still has peak periods where nearly all power\n"
+                 "must come from conventional generation.\n"
+                 "The overall trend shows gradual improvement in renewable integration")
     style_plot(fig, ax,
-              'Monthly Maximum Residual Load Percentage',
+              'Monthly Maximum and Mean Residual Load Percentage',
               'Date',
               'Residual Load Percentage',
               annotation)
     plt.show()
     
-    # Distribution of residual load
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
-    ax.hist(residual_pct, bins=50, edgecolor='black')
+    # Get second and second last full years
+    years = residual_pct.index.year.unique()
+    second_year = years[1]
+    second_last_year = years[-2]
     
-    annotation = (f"Mean: {residual_pct.mean():.1f}%\n"
-                 f"Median: {residual_pct.median():.1f}%\n"
-                 f"Std Dev: {residual_pct.std():.1f}%")
+    # Plot distribution for second year
+    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    year_data = residual_pct[residual_pct.index.year == second_year]
+    ax.hist(year_data, bins=50, edgecolor='black')
+    
+    annotation = (f"Year {second_year}\n"
+                 "Distribution shows how often different levels of conventional\n"
+                 "generation are needed to meet demand throughout the year")
     
     style_plot(fig, ax,
-              'Distribution of Residual Load Percentage',
+              f'Distribution of Residual Load Percentage ({second_year})',
               'Residual Load Percentage',
               'Frequency',
               annotation)
     plt.show()
-
+    
+    # Plot distribution for second last year
+    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    year_data = residual_pct[residual_pct.index.year == second_last_year]
+    ax.hist(year_data, bins=50, edgecolor='black')
+    
+    annotation = (f"Year {second_last_year}\n"
+                 "Distribution shows how often different levels of conventional\n"
+                 "generation are needed to meet demand throughout the year")
+    
+    style_plot(fig, ax,
+              f'Distribution of Residual Load Percentage ({second_last_year})',
+              'Residual Load Percentage', 
+              'Frequency',
+              annotation)
+    plt.show()
+    
+    # Add ECDFs for both years
+    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    
+    # Calculate and plot ECDF for second year
+    year_data = residual_pct[residual_pct.index.year == second_year]
+    sorted_data = np.sort(year_data)
+    ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
+    ax.plot(sorted_data, ecdf, label=str(second_year))
+    
+    # Calculate and plot ECDF for second last year  
+    year_data = residual_pct[residual_pct.index.year == second_last_year]
+    sorted_data = np.sort(year_data)
+    ecdf = np.arange(1, len(sorted_data) + 1) / len(sorted_data)
+    ax.plot(sorted_data, ecdf, label=str(second_last_year))
+    
+    annotation = ("Empirical Cumulative Distribution Function shows\n"
+                 "the probability of residual load being below a certain percentage.\n"
+                 "Steeper sections indicate more frequent values.")
+    
+    style_plot(fig, ax,
+              'ECDF of Residual Load Percentage',
+              'Residual Load Percentage',
+              'Cumulative Probability',
+              annotation)
+    
+    plt.legend()
+    plt.show()
+    
 plot_grid_stability()
 
 # %%
