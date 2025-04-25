@@ -1,0 +1,136 @@
+"""Configuration module for SMARD data types and constants.
+
+This module contains enumerations for various SMARD data parameters including
+time resolutions, regions, and variable IDs for different types of power data.
+"""
+
+from enum import Enum
+from typing import List
+
+
+class Resolution(str, Enum):
+    """Time resolution options for SMARD data queries."""
+    HOUR = "hour"
+    QUARTER_HOUR = "quarterhour"
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    YEAR = "year"
+
+
+class Region(str, Enum):
+    """Region identifiers for SMARD data queries."""
+    DE = "DE"  # Germany
+    AT = "AT"  # Austria
+    LU = "LU"  # Luxembourg
+    DE_LU = "DE-LU"  # Market area: DE/LU (from 01.10.2018)
+    DE_AT_LU = "DE-AT-LU"  # Market area: DE/AT/LU (until 30.09.2018)
+    FIFTY_HERTZ = "50Hertz"  # Control area (DE): 50Hertz
+    AMPRION = "Amprion"  # Control area (DE): Amprion
+    TENNET = "TenneT"  # Control area (DE): TenneT
+    TRANSNET_BW = "TransnetBW"  # Control area (DE): TransnetBW
+    APG = "APG"  # Control area (AT): APG
+    CREOS = "Creos"  # Control area (LU): Creos
+
+
+class Variable(int, Enum):
+    """Variable IDs for different types of power data."""
+    # Power Generation
+    BROWN_COAL = 1223
+    NUCLEAR = 1224
+    WIND_OFFSHORE = 1225
+    HYDRO = 1226
+    OTHER_CONVENTIONAL = 1227
+    OTHER_RENEWABLE = 1228
+    BIOMASS = 4066
+    WIND_ONSHORE = 4067
+    SOLAR = 4068
+    HARD_COAL = 4069
+    PUMPED_STORAGE = 4070
+    NATURAL_GAS = 4071
+
+    # Power Consumption
+    TOTAL_LOAD = 410
+    RESIDUAL_LOAD = 4359
+    PUMPED_STORAGE_LOAD = 4387
+
+    # Market Prices
+    PRICE_DE_LU = 4169
+    PRICE_DE_LU_NEIGHBORS = 5078
+    PRICE_BE = 4996
+    PRICE_NO2 = 4997
+    PRICE_AT = 4170
+    PRICE_DK1 = 252
+    PRICE_DK2 = 253
+    PRICE_FR = 254
+    PRICE_IT_NORTH = 255
+    PRICE_NL = 256
+    PRICE_PL = 257
+    PRICE_PL2 = 258
+    PRICE_CH = 259
+    PRICE_SI = 260
+    PRICE_CZ = 261
+    PRICE_HU = 262
+
+    # Forecasts
+    FORECAST_OFFSHORE = 3791
+    FORECAST_ONSHORE = 123
+    FORECAST_SOLAR = 125
+    FORECAST_OTHER = 715
+    FORECAST_WIND_SOLAR = 5097
+    FORECAST_TOTAL = 122
+
+    @classmethod
+    def get_name(cls, value: int) -> str:
+        """Get the enum name for a given integer value.
+        
+        Args:
+            value: The integer value to look up.
+            
+        Returns:
+            str: The name of the enum member with the given value.
+            
+        Raises:
+            ValueError: If no enum member has the given value.
+        """
+        try:
+            return cls(value).name
+        except ValueError:
+            raise ValueError(f"No Variable enum member has value {value}")
+
+    @classmethod
+    def get_value_to_name_map(cls) -> dict[int, str]:
+        """Get a dictionary mapping integer values to enum names.
+        
+        Returns:
+            dict[int, str]: A dictionary where keys are the integer values
+                           and values are the corresponding enum names.
+        """
+        return {member.value: member.name for member in cls}
+
+
+def get_all_resolutions() -> List[str]:
+    """Get all possible time resolutions.
+    
+    Returns:
+        List[str]: List of all available time resolution values.
+    """
+    return [r.value for r in Resolution]
+
+
+def get_all_regions() -> List[str]:
+    """Get all possible regions.
+    
+    Returns:
+        List[str]: List of all available region identifiers.
+    """
+    return [r.value for r in Region]
+
+
+def get_all_variables() -> List[int]:
+    """Get all possible variable IDs.
+    
+    Returns:
+        List[int]: List of all available variable IDs.
+    """
+    return [v.value for v in Variable] 
