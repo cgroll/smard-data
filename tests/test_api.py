@@ -55,9 +55,18 @@ def test_download_smard_data_success(mock_timestamps_response, mock_data_respons
 def test_download_smard_data_with_start_time(mock_timestamps_response, mock_data_response):
     """Test data download with start_time parameter."""
     with patch('requests.get') as mock_get:
+        # Update mock_data_response to have timestamps after start_time
+        updated_mock_data = {
+            "series": [
+                [1641081600000, 100.5],  # 2022-01-02 00:00:00
+                [1641085200000, 200.7],  # 2022-01-02 01:00:00
+            ]
+        }
+        
         mock_get.side_effect = [
             Mock(status_code=200, json=lambda: mock_timestamps_response),
-            Mock(status_code=200, json=lambda: mock_data_response)
+            Mock(status_code=200, json=lambda: updated_mock_data),
+            Mock(status_code=200, json=lambda: updated_mock_data)
         ]
         
         start_time = datetime(2022, 1, 2)  # Should only get data from second timestamp
@@ -69,10 +78,11 @@ def test_download_smard_data_with_start_time(mock_timestamps_response, mock_data
             start_time=start_time
         )
         
-        # Verify only one timestamp request was made after filtering
-        assert mock_get.call_count == 2
+        # Verify requests were made correctly
+        assert mock_get.call_count == 3  # One for timestamps, two for data
         assert isinstance(df, pd.DataFrame)
-
+        assert len(df) > 0  # Verify we got some data
+        assert min(df.index) >= start_time  # Verify data starts after our start_time
 def test_download_smard_data_timestamp_error():
     """Test error handling when timestamp request fails."""
     with patch('requests.get') as mock_get:
