@@ -108,6 +108,62 @@ class Variable(int, Enum):
         """
         return {member.value: member.name for member in cls}
 
+    @classmethod
+    def get_generation_variables(cls) -> List[int]:
+        """Get all power generation variable IDs.
+        
+        Returns:
+            List[int]: List of all power generation variable IDs.
+        """
+        generation_vars = [
+            cls.BROWN_COAL, cls.NUCLEAR, cls.WIND_OFFSHORE, cls.HYDRO,
+            cls.OTHER_CONVENTIONAL, cls.OTHER_RENEWABLE, cls.BIOMASS,
+            cls.WIND_ONSHORE, cls.SOLAR, cls.HARD_COAL, cls.PUMPED_STORAGE,
+            cls.NATURAL_GAS
+        ]
+        return [var.value for var in generation_vars]
+
+    @classmethod
+    def get_consumption_variables(cls) -> List[int]:
+        """Get all power consumption variable IDs.
+        
+        Returns:
+            List[int]: List of all power consumption variable IDs.
+        """
+        consumption_vars = [
+            cls.TOTAL_LOAD, cls.RESIDUAL_LOAD, cls.PUMPED_STORAGE_LOAD
+        ]
+        return [var.value for var in consumption_vars]
+
+    @classmethod
+    def get_price_variables(cls) -> List[int]:
+        """Get all market price variable IDs.
+        
+        Returns:
+            List[int]: List of all market price variable IDs.
+        """
+        price_vars = [
+            cls.PRICE_DE_LU, cls.PRICE_DE_LU_NEIGHBORS, cls.PRICE_BE,
+            cls.PRICE_NO2, cls.PRICE_AT, cls.PRICE_DK1, cls.PRICE_DK2,
+            cls.PRICE_FR, cls.PRICE_IT_NORTH, cls.PRICE_NL, cls.PRICE_PL,
+            cls.PRICE_PL2, cls.PRICE_CH, cls.PRICE_SI, cls.PRICE_CZ,
+            cls.PRICE_HU
+        ]
+        return [var.value for var in price_vars]
+
+    @classmethod
+    def get_forecast_variables(cls) -> List[int]:
+        """Get all forecast variable IDs.
+        
+        Returns:
+            List[int]: List of all forecast variable IDs.
+        """
+        forecast_vars = [
+            cls.FORECAST_OFFSHORE, cls.FORECAST_ONSHORE, cls.FORECAST_SOLAR,
+            cls.FORECAST_OTHER, cls.FORECAST_WIND_SOLAR, cls.FORECAST_TOTAL
+        ]
+        return [var.value for var in forecast_vars]
+
 
 def get_all_resolutions() -> List[str]:
     """Get all possible time resolutions.
@@ -133,4 +189,4 @@ def get_all_variables() -> List[int]:
     Returns:
         List[int]: List of all available variable IDs.
     """
-    return [v.value for v in Variable] 
+    return [v.value for v in Variable]

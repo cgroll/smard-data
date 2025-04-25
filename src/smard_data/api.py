@@ -86,5 +86,6 @@ def download_smard_data(
     # Sort by timestamp and remove duplicates
     df = df.sort_values('timestamp').drop_duplicates(subset='timestamp')
     df.set_index('timestamp', inplace=True)
+    df = df.dropna()
     
     return df 
