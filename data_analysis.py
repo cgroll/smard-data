@@ -7,8 +7,7 @@ from smard_data.paths import ProjPaths
 
 # Set consistent style for all plots
 plt.style.use('seaborn-v0_8')
-FIGSIZE_SINGLE = (12, 6)
-FIGSIZE_WIDE = (15, 6)
+FIGSIZE = (12, 6)  # Single standard figure size for all plots
 
 # Color schemes
 GENERATION_COLORS = {
@@ -125,7 +124,7 @@ df_load = load_consumption_data()
 def plot_demand_overview():
     """Create overview plots of power demand."""
     # Yearly total load trend
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     monthly_load = df_load['TOTAL_LOAD'].resample('ME').sum() / 1000  # Convert to GWh
     monthly_load = monthly_load.iloc[:-1]
     monthly_load.plot(ax=ax)
@@ -141,7 +140,7 @@ def plot_demand_overview():
     plt.show()
     
     # Monthly pattern
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     monthly_load = df_load.groupby(df_load.index.month)['TOTAL_LOAD'].mean()
     
     ax.plot(range(1,13), monthly_load.values, marker='o')
@@ -161,7 +160,7 @@ def plot_demand_overview():
     plt.show()
     
     # Daily pattern
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     hourly_load = df_load.groupby(df_load.index.hour)['TOTAL_LOAD'].mean()
     
     ax.plot(hourly_load.index, hourly_load.values, marker='o')
@@ -194,7 +193,7 @@ def plot_generation_mix_evolution():
     monthly_gen = df_combined.resample('ME').mean()
     
     # Absolute generation
-    fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     monthly_gen.plot(kind='area', stacked=True, ax=ax, color=[GENERATION_COLORS[col] for col in monthly_gen.columns])
     
     annotation = ("Key observations:\n"
@@ -210,11 +209,10 @@ def plot_generation_mix_evolution():
               annotation)
     
     plt.legend(bbox_to_anchor=(0.5, -0.15), loc='upper center', ncol=4)
-    plt.tight_layout()
     plt.show()
     
     # Percentage contribution
-    fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     monthly_gen_pct = monthly_gen.div(monthly_gen.sum(axis=1), axis=0) * 100
     monthly_gen_pct.plot(kind='area', stacked=True, ax=ax, color=[GENERATION_COLORS[col] for col in monthly_gen_pct.columns])
     
@@ -227,7 +225,6 @@ def plot_generation_mix_evolution():
               annotation)
     
     plt.legend(bbox_to_anchor=(0.5, -0.15), loc='upper center', ncol=4)
-    plt.tight_layout()
     plt.show()
 
 plot_generation_mix_evolution()
@@ -239,7 +236,7 @@ plot_generation_mix_evolution()
 def plot_renewable_patterns():
     """Analyze and plot renewable generation patterns."""
     # Solar generation patterns
-    fig, axes = plt.subplots(2, 1, figsize=(12, 12))
+    fig, axes = plt.subplots(2, 1, figsize=FIGSIZE)
     
     # Monthly solar pattern
     monthly_solar = df_combined['SOLAR'].groupby(df_combined.index.month).mean()
@@ -274,13 +271,12 @@ def plot_renewable_patterns():
               'Power (MWh)',
               annotation_hourly)
     
-    plt.tight_layout()
     plt.show()
     
     # Wind generation patterns
     df_combined['WIND_TOTAL'] = df_combined['WIND_OFFSHORE'] + df_combined['WIND_ONSHORE']
     
-    fig, axes = plt.subplots(2, 1, figsize=(12, 12))
+    fig, axes = plt.subplots(2, 1, figsize=FIGSIZE)
     
     # Monthly wind pattern
     monthly_wind = df_combined['WIND_TOTAL'].groupby(df_combined.index.month).mean()
@@ -313,7 +309,6 @@ def plot_renewable_patterns():
               'Power (MWh)',
               annotation_hourly)
     
-    plt.tight_layout()
     plt.show()
 
 plot_renewable_patterns()
@@ -328,7 +323,7 @@ def plot_grid_stability():
     residual_pct = (df_load['RESIDUAL_LOAD'] / df_load['TOTAL_LOAD'] * 100).clip(lower=0)
     
     # Monthly maximum and mean residual load
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     monthly_max_residual = residual_pct.resample('ME').max()
     monthly_mean_residual = residual_pct.resample('ME').mean()
     
@@ -354,7 +349,7 @@ def plot_grid_stability():
     second_last_year = years[-2]
     
     # Plot distribution for second year
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     year_data = residual_pct[residual_pct.index.year == second_year]
     ax.hist(year_data, bins=50, edgecolor='black')
     
@@ -370,7 +365,7 @@ def plot_grid_stability():
     plt.show()
     
     # Plot distribution for second last year
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     year_data = residual_pct[residual_pct.index.year == second_last_year]
     ax.hist(year_data, bins=50, edgecolor='black')
     
@@ -386,7 +381,7 @@ def plot_grid_stability():
     plt.show()
     
     # Add ECDFs for both years
-    fig, ax = plt.subplots(figsize=FIGSIZE_SINGLE)
+    fig, ax = plt.subplots(figsize=FIGSIZE)
     
     # Calculate and plot ECDF for second year
     year_data = residual_pct[residual_pct.index.year == second_year]
