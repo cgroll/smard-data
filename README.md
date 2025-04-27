@@ -63,21 +63,17 @@ uv run python datapipe.py pipeline --force
 
 ## Generate Reports
 
-You can convert Python analysis scripts into HTML reports using the `generate_report.py` script. This is useful for sharing data analysis results in a readable format.
+You can convert Python analysis scripts into reports using the `generate_report.py` script. This is useful for sharing data analysis results in a readable format.
 
 ```bash
-# Generate HTML report from a Python script
+# Generate reports from a Python script
 uv run python tests/generate_report.py data_analysis.py
-
-# This will create:
-# - output/reports/analyze_generation.ipynb (intermediate notebook)
-# - output/reports/analyze_generation.html (final report)
 ```
 
 The script will:
 1. Convert your Python script to a Jupyter notebook
 2. Execute the notebook to capture outputs
-3. Generate an HTML report with results
+3. Generate an HTML, Markdown and pdf report with results
 
 # Development
 
