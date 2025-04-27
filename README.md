@@ -26,7 +26,7 @@ The data pipeline provides a command-line interface to download and process SMAR
 
 1. Install dependencies:
 ```bash
-uv pip install -r requirements.txt
+uv sync
 ```
 
 ## Download Data
