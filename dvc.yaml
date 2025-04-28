@@ -1,0 +1,26 @@
+stages:
+  download_generation:
+    cmd: python jobs/download_raw_data.py generation
+    outs:
+      - data/raw_data/generation/
+  download_consumption:
+    cmd: python jobs/download_raw_data.py consumption
+    outs:
+      - data/raw_data/consumption/
+  download_prices:
+    cmd: python jobs/download_raw_data.py prices
+    outs:
+      - data/raw_data/prices/
+  download_forecasts:
+    cmd: python jobs/download_raw_data.py forecasts
+    outs:
+      - data/raw_data/forecasts/
+  generate_01_data_analysis_report:
+    cmd: python generate_report.py analysis/01_data_analysis.py
+    deps:
+      - analysis/01_data_analysis.py
+      - data/raw_data/generation/
+      - data/raw_data/consumption/
+    outs:
+      - output/reports/01_data_analysis/:
+          cache: false

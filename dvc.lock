@@ -1,0 +1,57 @@
+schema: '2.0'
+stages:
+  download_consumption:
+    cmd: python jobs/download_raw_data.py consumption
+    outs:
+    - path: data/raw_data/consumption/
+      hash: md5
+      md5: 9461cdf5b954fcc90a7555e0dc658338.dir
+      size: 11426025
+      nfiles: 3
+  download_generation:
+    cmd: python jobs/download_raw_data.py generation
+    outs:
+    - path: data/raw_data/generation/
+      hash: md5
+      md5: 243be898f91da128750338c183639aa3.dir
+      size: 42658969
+      nfiles: 12
+  generate_01_data_analysis_report:
+    cmd: python generate_report.py analysis/01_data_analysis.py
+    deps:
+    - path: analysis/01_data_analysis.py
+      hash: md5
+      md5: e0cf59a1713a2c31db71a00c68c3c473
+      size: 15011
+    - path: data/raw_data/consumption/
+      hash: md5
+      md5: 9461cdf5b954fcc90a7555e0dc658338.dir
+      size: 11426025
+      nfiles: 3
+    - path: data/raw_data/generation/
+      hash: md5
+      md5: 243be898f91da128750338c183639aa3.dir
+      size: 42658969
+      nfiles: 12
+    outs:
+    - path: output/reports/01_data_analysis/
+      hash: md5
+      md5: 7908198f81c0b0f0fbcbb14be2b1d077.dir
+      size: 3491258
+      nfiles: 14
+  download_prices:
+    cmd: python jobs/download_raw_data.py prices
+    outs:
+    - path: data/raw_data/prices/
+      hash: md5
+      md5: 9bedd38e695afcd118d59a4ca1f65606.dir
+      size: 53682567
+      nfiles: 16
+  download_forecasts:
+    cmd: python jobs/download_raw_data.py forecasts
+    outs:
+    - path: data/raw_data/forecasts/
+      hash: md5
+      md5: 51432632f0dd8becca066ed7d518c9c1.dir
+      size: 21399341
+      nfiles: 6
