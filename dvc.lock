@@ -21,8 +21,8 @@ stages:
     deps:
     - path: analysis/01_data_analysis.py
       hash: md5
-      md5: e0cf59a1713a2c31db71a00c68c3c473
-      size: 15011
+      md5: be8cca6615b6805b74195009747a4e57
+      size: 15034
     - path: data/raw_data/consumption/
       hash: md5
       md5: 9461cdf5b954fcc90a7555e0dc658338.dir
@@ -36,8 +36,8 @@ stages:
     outs:
     - path: output/reports/01_data_analysis/
       hash: md5
-      md5: 7908198f81c0b0f0fbcbb14be2b1d077.dir
-      size: 3491258
+      md5: a18afc870733ec671b9416cb0afc4893.dir
+      size: 3481408
       nfiles: 14
   download_prices:
     cmd: python jobs/download_raw_data.py prices

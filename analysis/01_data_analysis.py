@@ -40,7 +40,7 @@ def load_generation_data():
     # Get paths to generation data files
     data_files = []
     for var in generation_vars:
-        file = paths.raw_data_path / f"{var}_quarterhour.parquet"
+        file = paths.generation_raw_data_path / f"{var}_quarterhour.parquet"
         if file.exists():
             data_files.append(file)
 
@@ -78,7 +78,7 @@ def load_consumption_data():
     
     load_files = []
     for var in load_vars:
-        file = paths.raw_data_path / f"{var}_quarterhour.parquet"
+        file = paths.consumption_raw_data_path / f"{var}_quarterhour.parquet"
         if file.exists():
             load_files.append(file)
 
