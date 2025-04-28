@@ -1,7 +1,6 @@
 import subprocess
 import sys
-import click
-import os
+from pathlib import Path
 from smard_data.paths import ProjPaths
 
 def run_command(command):
@@ -16,74 +15,81 @@ def run_command(command):
     print(result.stdout)
     return result
 
-def ensure_output_dir():
-    """Ensure the output/reports directory exists"""
-    ProjPaths.reports_path.mkdir(parents=True, exist_ok=True)
+def ensure_output_dir(report_dir):
+    """Ensure the output directory exists"""
+    report_dir.mkdir(parents=True, exist_ok=True)
 
-@click.command()
-@click.argument('python_script', type=click.Path(exists=True))
 def generate_report(python_script):
     """Generate HTML report from Python script using Jupyter"""
-    ensure_output_dir()
+    script_path = Path(python_script)
+    if not script_path.exists():
+        sys.exit(f"Analysis script not found: {python_script}")
+        
+    # Create report subdirectory based on script name
+    script_basename = script_path.stem
+    report_dir = ProjPaths().reports_path / script_basename
+    ensure_output_dir(report_dir)
     
-    # Derive filenames
-    script_basename = os.path.splitext(os.path.basename(python_script))[0]
-    notebook_file = f"{script_basename}.ipynb"
-    html_output = f"{script_basename}.html"
-    markdown_output = f"{script_basename}.md"
-    pdf_output = f"{script_basename}.pdf"
-    
-    reports_path = ProjPaths.reports_path
+    # Define output files
+    notebook_file = report_dir / f"{script_basename}.ipynb"
+    html_output = report_dir / f"{script_basename}.html"
+    markdown_output = report_dir / f"{script_basename}.md"
+    pdf_output = report_dir / f"{script_basename}.pdf"
 
-    print(f"STEP 1: Converting {python_script} to {reports_path}/{notebook_file} using jupytext...")
-    run_command(["jupytext", "--to", "notebook", "--output", str(reports_path / notebook_file), python_script])
+    print(f"STEP 1: Converting {python_script} to {notebook_file} using jupytext...")
+    run_command(["jupytext", "--to", "notebook", "--output", str(notebook_file), str(script_path)])
 
-    print(f"\nSTEP 2: Executing {reports_path}/{notebook_file} and saving outputs (in place)...")
+    print(f"\nSTEP 2: Executing {notebook_file} and saving outputs (in place)...")
     run_command([
         "jupyter", "nbconvert",
         "--to", "notebook",
         "--execute",
         "--inplace",
-        str(reports_path / notebook_file)
+        str(notebook_file)
     ])
 
-    print(f"\nSTEP 3: HTML Exporting executed {reports_path}/{notebook_file} to {reports_path}/{html_output}...")
+    print(f"\nSTEP 3: HTML Exporting executed {notebook_file} to {html_output}...")
     run_command([
         "jupyter", "nbconvert",
         "--to", "html",
         "--template", "basic",
         "--no-input",
-        "--output", html_output,
-        str(reports_path / notebook_file)
+        "--output", str(html_output),
+        str(notebook_file)
     ])
 
-    print(f"\nSTEP 4: Markdown Exporting executed {reports_path}/{notebook_file} to {reports_path}/{markdown_output}...")
+    print(f"\nSTEP 4: Markdown Exporting executed {notebook_file} to {markdown_output}...")
     run_command([
         "jupyter", "nbconvert",
         "--to", "markdown",
-        "--output", markdown_output,
+        "--output", str(markdown_output),
         "--no-input",
-        str(reports_path / notebook_file)
+        str(notebook_file)
     ])
     
-    print(f"\nSTEP 5: PDF Exporting executed {reports_path}/{notebook_file} to {reports_path}/{pdf_output}...")
+    print(f"\nSTEP 5: PDF Exporting executed {notebook_file} to {pdf_output}...")
     run_command([
         "jupyter", "nbconvert",
         "--to", "pdf",
-        "--output", pdf_output,
+        "--output", str(pdf_output),
         "--no-input",
-        str(reports_path / notebook_file)
+        str(notebook_file)
     ])
 
     # Clean up intermediate notebook file
-    (reports_path / notebook_file).unlink()
+    notebook_file.unlink()
 
     print("\n-------------------------------------")
     print("Report generation complete!")
     print(f"Input Python script: {python_script}")
-    print(f"Output HTML report: {reports_path}/{html_output}")
-    print(f"Output Markdown report: {reports_path}/{markdown_output}")
+    print(f"Output directory: {report_dir}")
+    print("Generated files:")
+    print(f"- HTML report: {html_output}")
+    print(f"- Markdown report: {markdown_output}")
+    print(f"- PDF report: {pdf_output}")
     print("-------------------------------------")
 
 if __name__ == '__main__':
-    generate_report()
+    if len(sys.argv) != 2:
+        sys.exit("Usage: python generate_report.py <analysis_script.py>")
+    generate_report(sys.argv[1])
