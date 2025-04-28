@@ -12,7 +12,7 @@ from tqdm import tqdm
 from typing import List
 
 
-def download_variables(variables: List[int]):
+def download_variables(variables: List[int], output_path):
     """Download data for specified variables.
     
     Note: The SMARD API uses a block-based data retrieval system where we first get
@@ -21,17 +21,16 @@ def download_variables(variables: List[int]):
     
     Args:
         variables: List of variable IDs to download
+        output_path: Path to the output directory for saving files
     """
-    paths = ProjPaths()
     start_time = datetime(2000, 1, 1)
 
-    # Create raw data directory if it doesn't exist
-    paths.raw_data_path.mkdir(parents=True, exist_ok=True)
+    # Create output directory if it doesn't exist
+    output_path.mkdir(parents=True, exist_ok=True)
 
     # Iterate over specified variables with progress bar
     for variable_value in tqdm(variables):
         variable_name = Variable.get_name(variable_value)
-        
         print(f"\nDownloading {variable_name} data...")
         df = download_smard_data(
             region=Region.DE.value,
@@ -40,38 +39,62 @@ def download_variables(variables: List[int]):
             variable_name=variable_name,
             start_time=start_time
         )
-
         # Save to parquet file
         filename = f"{variable_name}_{Resolution.QUARTER_HOUR.value}.parquet"
-        output_path = paths.raw_data_path / filename
-        df.to_parquet(output_path)
-        print(f"Saved data to {output_path}")
+        file_path = output_path / filename
+        df.to_parquet(file_path)
+        print(f"Saved data to {file_path}")
 
 
 def download_generation():
     """Download all power generation variables."""
-    download_variables(Variable.get_generation_variables())
+    paths = ProjPaths()
+    download_variables(Variable.get_generation_variables(), paths.generation_raw_data_path)
 
 
 def download_consumption():
     """Download all power consumption variables."""
-    download_variables(Variable.get_consumption_variables())
+    paths = ProjPaths()
+    download_variables(Variable.get_consumption_variables(), paths.consumption_raw_data_path)
 
 
 def download_prices():
     """Download all market price variables."""
-    download_variables(Variable.get_price_variables())
+    paths = ProjPaths()
+    download_variables(Variable.get_price_variables(), paths.prices_raw_data_path)
 
 
 def download_forecasts():
     """Download all forecast variables."""
-    download_variables(Variable.get_forecast_variables())
+    paths = ProjPaths()
+    download_variables(Variable.get_forecast_variables(), paths.forecasts_raw_data_path)
 
 
 def download_all():
     """Download all available variables."""
-    download_variables([v.value for v in Variable])
+    paths = ProjPaths()
+    download_variables([v.value for v in Variable], paths.raw_data_path)
+
+
+def main():
+    import sys
+    if len(sys.argv) == 2:
+        arg = sys.argv[1].lower()
+        if arg == "generation":
+            download_generation()
+        elif arg == "consumption":
+            download_consumption()
+        elif arg == "prices":
+            download_prices()
+        elif arg == "forecasts":
+            download_forecasts()
+        elif arg == "all":
+            download_all()
+        else:
+            print(f"Unknown argument: {arg}")
+    else:
+        download_all()
 
 
 if __name__ == "__main__":
-    download_all() 
+    main() 
