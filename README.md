@@ -18,62 +18,26 @@ You are an AI assistant specialized in Python development. Generate Python code 
 
 > Note: For the latest version of these rules, please refer to `.cursor/rules/python-development.md`
 
-# Data Pipeline Usage
-
-The data pipeline provides a command-line interface to download and process SMARD data. All commands use `uv` as the package manager.
-
-## Setup
+# Setup
 
 1. Install dependencies:
 ```bash
 uv sync
 ```
 
-## Download Data
+# Data Pipeline Usage
 
-The pipeline supports downloading different categories of SMARD data:
+The data pipeline provides a command-line interface to download and process SMARD data.
 
-```bash
-# Download specific categories
-uv run python datapipe.py download generation  # Power generation data
-uv run python datapipe.py download consumption # Power consumption data
-uv run python datapipe.py download prices      # Market price data
-uv run python datapipe.py download forecasts   # Forecast data
+## Download Data & Generate Reports
 
-# Download all data
-uv run python datapipe.py download all
-
-# Force redownload (ignore existing files)
-uv run python datapipe.py download generation --force
-```
-
-## Run Full Pipeline
-
-To run all pipeline steps in sequence:
+The pipeline uses DVC to manage data downloads and report generation. The workflow is defined in `dvc.yaml`.
 
 ```bash
-uv run python datapipe.py pipeline
+uv run dvc repro
 ```
 
-Add `--force` flag to rerun all steps regardless of existing outputs:
-
-```bash
-uv run python datapipe.py pipeline --force
-```
-
-## Generate Reports
-
-You can convert Python analysis scripts into reports using the `generate_report.py` script. This is useful for sharing data analysis results in a readable format.
-
-```bash
-# Generate reports from a Python script
-uv run python tests/generate_report.py data_analysis.py
-```
-
-The script will:
-1. Convert your Python script to a Jupyter notebook
-2. Execute the notebook to capture outputs
-3. Generate an HTML, Markdown and pdf report with results
+Not all outputs of the stages are "cached". This keeps the dvc cache to a minimum. The pipline also create several report outputs that visualize the results from the data analysis script and are a good starting point to create a full markdown blog post.
 
 # Development
 
